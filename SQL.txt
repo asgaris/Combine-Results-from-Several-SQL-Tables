@@ -1,0 +1,80 @@
+/*Create Table Profit 5 rows and 5 columns */ 
+DROP TABLE IF EXISTS Profit;
+
+CREATE TABLE Profit (
+	Customer_id, 
+	interchange, 
+	Annual_fees, 
+	Service_charge, 
+	Losses, 
+	number_transaction
+);
+
+INSERT INTO Profit VALUES (1, 23.61, 2, 1.01, 0, 4);
+INSERT INTO Profit VALUES (2, 16.12, 1, 1.08, 0, 10);
+INSERT INTO Profit VALUES (5, 17.5, 0, 1.02, 1, 16);
+INSERT INTO Profit VALUES (1, 33.24, 1, 1.01, 1, 5);
+INSERT INTO Profit VALUES (4, 20.43, 0, 1.05, 0, 11);
+SELECT * FROM Profit;
+
+/*Add new column to Profit and Calculate net_profit */
+ALTER TABLE Profit ADD Net_Profit;
+UPDATE Profit SET  Net_Profit = Profit.interchange - Profit.Annual_fees - Profit.Service_charge - Profit.Losses;
+SELECT * FROM Profit;
+
+/*Create Table Customers 5 rows and 4 columns */ 
+DROP TABLE IF EXISTS Customers;
+CREATE TABLE Customers (
+	Customer_id, 
+	Customer_name, 
+	province, 
+	segment
+);
+
+INSERT INTO Customers VALUES (1, 'Sahar Asgari', 'AB', 3);
+INSERT INTO Customers VALUES (2, 'John Peep', 'ON', 7);
+INSERT INTO Customers VALUES (3, 'Lucy Gupta', 'ON', 8);
+INSERT INTO Customers VALUES (4, 'Rosie Team', 'BC', 4);
+INSERT INTO Customers VALUES (5, 'Tom Andrew', 'ON', 11);
+SELECT * FROM Customers;
+
+/*Create table 1 using Profit table*/
+DROP TABLE IF EXISTS Table_1;
+CREATE TABLE Table_1 
+          AS SELECT * FROM Profit 
+          WHERE Customer_id in ( 1, 2, 5)
+          ;
+
+ALTER TABLE Table_1 DROP number_transaction;
+SELECT * FROM Table_1;
+
+SELECT Customer_id, COUNT (*) AS number_samples 
+    FROM Table_1
+    GROUP BY Customer_id
+;
+
+/*Create table 2 */
+DROP TABLE IF EXISTS Table_2;
+
+CREATE TABLE Table_2 AS SELECT Customer_id AS id, Customer_name AS name, province, segment 
+            FROM Customers 
+            WHERE segment BETWEEN 0 AND 20 
+            ORDER BY id ASC, segment ASC
+;
+SELECT * FROM Table_2;
+
+/*Merge table_1 and Table_2 to see customer name and profit*/
+SELECT Table_1.Customer_id, Table_2.name, Table_1.Net_Profit
+       FROM Table_1
+       JOIN Table_2 ON Table_1.Customer_id = Table_2.id
+       WHERE segment < 10;
+
+/*Create Merged_Table*/    
+DROP VIEW IF EXISTS Merged_Table;
+CREATE VIEW Merged_Table AS
+       SELECT Table_1.Customer_id, Table_2.name, Table_1.Net_Profit, Table_2.province
+       FROM Table_1
+       JOIN Table_2 ON Table_1.Customer_id = Table_2.id
+       WHERE segment < 10;
+
+SELECT * FROM Merged_Table;
